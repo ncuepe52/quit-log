@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5c518">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="寶貝的戒菸紀錄">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='50' cy='58' rx='40' ry='38' fill='%23f5c518'/%3E%3Cpath d='M50 20c4-11 14-14 20-11-4 6-10 9-20 11z' fill='%234caf50'/%3E%3Ccircle cx='37' cy='52' r='5' fill='%232b2100'/%3E%3Ccircle cx='63' cy='52' r='5' fill='%232b2100'/%3E%3C/svg%3E">
+<title>寶貝的戒菸紀錄</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#fffbea; --surface:#ffffff; --line:#efe3b4; --text:#241d05; --text2:#5a4f2c; --muted:#857a56;
+  --accent:#f5c518; --accent-ink:#2b2100; --accent-soft:#fff2bf; --accent-text:#7a5c00;
+  --heart:#c2456b; --heart-soft:#fbe8ee;
+  --warn:#9a6400; --warn-soft:#fbf0d9; --crit:#b42f2f; --crit-soft:#fbe6e4; --info-soft:#e7eef8; --info:#2a5f9e;
+  --series:#2a78d6;
+}
+@media (prefers-color-scheme: dark){ :root{
+  color-scheme:dark;
+  --bg:#17140b; --surface:#211d10; --line:#3a3420; --text:#f6f1dc; --text2:#d3cba8; --muted:#9a9174;
+  --accent:#f5c518; --accent-ink:#1d1600; --accent-soft:#3a3110; --accent-text:#f5cc2e;
+  --heart:#e9799a; --heart-soft:#3a1f29;
+  --warn:#e2a843; --warn-soft:#30260f; --crit:#ee7373; --crit-soft:#371a1a; --info-soft:#1b2738; --info:#8db6ea;
+  --series:#3987e5; }}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-size:15px;line-height:1.6;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:680px;margin:0 auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+header{display:flex;align-items:center;gap:14px}
+.mascot{flex:none;width:76px;height:76px}
+.mascot .body{fill:var(--accent)} .mascot .ink{fill:var(--accent-ink)}
+header .head{min-width:0}
+header .who{font-size:13px;color:var(--muted);letter-spacing:.04em}
+header h1{font-size:25px;margin:0;text-wrap:balance}
+header .date{color:var(--text2);font-size:14px}
+.status{font-size:13px;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-size:18px;margin:0 0 8px}
+.card h3{font-size:14px;color:var(--text2);margin:14px 0 6px;font-weight:600}
+.muted{color:var(--muted);font-size:13px}.sub{color:var(--text2);font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat .num{font-size:34px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .lbl{color:var(--text2);font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+button{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:9px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+button.heart{background:var(--heart-soft);border-color:var(--heart);color:var(--text)}
+button.small{padding:5px 10px;font-size:13px}
+button:disabled{opacity:.5;cursor:default}
+input,select,textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+textarea{width:100%;min-height:72px;resize:vertical}
+input.full{width:100%}
+label.field{display:block;margin:8px 0}
+label.field>span{display:block;font-size:13px;color:var(--text2);margin-bottom:4px}
+.scale{display:flex;gap:6px}.scale button{flex:1;padding:9px 0;font-size:20px}
+.scale button.on{background:var(--accent-soft);border-color:var(--accent-text);box-shadow:inset 0 0 0 1px var(--accent-text)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14px}
+.chip.on{background:var(--accent-soft);border-color:var(--accent-text)}
+.dose{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.dose:first-child{border-top:none}
+.pill{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px}
+.pill.ok{background:var(--accent-soft);color:var(--accent-text)}.pill.no{background:var(--warn-soft);color:var(--warn)}
+.alert{border-radius:10px;padding:12px 14px;font-size:14px;border:1px solid}
+.alert.warn{background:var(--warn-soft);border-color:var(--warn)}
+.alert.crit{background:var(--crit-soft);border-color:var(--crit)}
+.alert.info{background:var(--info-soft);border-color:var(--info)}
+.alert.good{background:var(--accent-soft);border-color:var(--accent-text)}
+a.alert{display:block;text-decoration:none;color:var(--text)}
+ul.log{list-style:none;padding:0;margin:4px 0}
+ul.log li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.note{background:var(--heart-soft);border:1px solid var(--heart);border-radius:14px;padding:14px 16px}
+.note .from{font-size:12px;color:var(--heart);font-weight:700;letter-spacing:.04em}
+.note .msg{font-size:18px;font-weight:600;margin:4px 0 8px;white-space:pre-wrap;word-break:break-word}
+.thread{display:flex;flex-direction:column;gap:8px}
+.bubble{max-width:85%;padding:8px 12px;border-radius:12px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.bubble.her{align-self:flex-start;background:var(--heart-soft)}
+.bubble.him{align-self:flex-end;background:var(--accent-soft)}
+.bubble .t{display:block;font-size:11px;color:var(--muted)}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);z-index:5}
+nav button{flex:1;max-width:140px;border:none;border-radius:0;background:none;padding:9px 0 10px;font-size:12px;color:var(--muted)}
+nav button svg{display:block;margin:0 auto 2px;width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+nav button.on{color:var(--accent-text);font-weight:700}
+.timeline{border-left:2px solid var(--line);margin-left:6px;padding-left:16px}
+.tl{position:relative;padding:4px 0 10px}
+.tl::before{content:"";position:absolute;left:-23px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--line);border:2px solid var(--surface)}
+.tl.done::before{background:var(--accent-text)}
+.tl.now::before{background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.tl b{font-size:14px}.tl .d{font-size:14px;color:var(--text2)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--text2);font-weight:600;white-space:nowrap}
+.chart{position:relative}.chart svg{display:block;width:100%;height:auto}
+.chart .axis{fill:var(--muted);font-size:10px}.chart .grid{stroke:var(--line);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--text);color:var(--surface);font-size:12px;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-115%);z-index:3}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20;max-width:90vw}
+.big{width:100%;padding:15px;font-size:17px}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.quick button{font-size:13px;padding:5px 10px;border-radius:999px}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px;word-break:break-all}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <svg class="mascot" viewBox="0 0 100 100" aria-hidden="true">
+    <rect x="48.5" y="17" width="3" height="11" rx="1.5" fill="#4caf50"/>
+    <path d="M50 21c4-11 14-14 20-11-4 6-10 9-20 11z" fill="#4caf50"/>
+    <path d="M50 22c-3-9-11-12-16-10 3 5 8 8 16 10z" fill="#7cc576"/>
+    <ellipse class="body" cx="18" cy="66" rx="7" ry="10" transform="rotate(25 18 66)"/>
+    <ellipse class="body" cx="82" cy="56" rx="7" ry="10" transform="rotate(-35 82 56)"/>
+    <ellipse class="body" cx="50" cy="60" rx="34" ry="32"/>
+    <ellipse cx="50" cy="72" rx="19" ry="13" fill="#fff" opacity=".5"/>
+    <circle class="ink" cx="38" cy="54" r="4"/><circle class="ink" cx="62" cy="54" r="4"/>
+    <circle cx="39.3" cy="52.6" r="1.3" fill="#fff"/><circle cx="63.3" cy="52.6" r="1.3" fill="#fff"/>
+    <path d="M43 64q7 6 14 0" fill="none" stroke="var(--accent-ink)" stroke-width="2.6" stroke-linecap="round"/>
+  </svg>
+  <div class="head">
+    <div class="who" id="whoLabel">歡迎</div>
+    <h1 id="appTitle">寶貝的戒菸紀錄</h1>
+    <div class="date" id="todayLabel"></div>
+    <div class="status" id="connStatus"></div>
+  </div>
+</header>
+
+<!-- =================== 連線 =================== -->
+<section class="tab" id="tab-connect" hidden>
+ <div class="stack">
+  <div class="card">
+    <h2>第一次使用：連線</h2>
+    <p class="sub">請貼上「連線網址」並輸入你的密碼。如果你是用她傳來的連結打開，會自動帶入，不用填。</p>
+    <label class="field"><span>連線網址（Google Apps Script 網址）</span><input class="full" id="cApi" placeholder="https://script.google.com/macros/s/.../exec"></label>
+    <label class="field"><span>你的密碼</span><input class="full" id="cCode" type="password" autocomplete="current-password"></label>
+    <button class="primary" id="btnConnect">連線</button>
+    <div class="muted" id="cMsg" style="margin-top:6px"></div>
+  </div>
+ </div>
+</section>
+
+<!-- =================== 今天（戒菸者） =================== -->
+<section class="tab" id="tab-home" hidden>
+ <div class="stack">
+  <div id="setupAlert"></div>
+  <div id="herNote"></div>
+  <div class="stats">
+    <div class="stat"><div class="num" id="sQuit">–</div><div class="lbl">戒菸第幾天</div></div>
+    <div class="stat"><div class="num" id="sChampix">–</div><div class="lbl">吃 Champix 第幾天</div></div>
+    <div class="stat"><div class="num" id="sAvoided">–</div><div class="lbl">少抽的菸（根）</div></div>
+    <div class="stat"><div class="num" id="sMoney">–</div><div class="lbl">省下的錢（元）</div></div>
+  </div>
+  <div id="moodAlert"></div>
+  <div class="card">
+    <h2>今天的 Champix</h2>
+    <div id="doseList"></div>
+    <div class="muted" id="doseHint"></div>
+  </div>
+  <div class="card">
+    <h2>想抽菸／抽了菸</h2>
+    <button class="primary big" id="btnCrave">我現在想抽菸</button>
+    <div class="row" style="margin-top:8px"><button style="flex:1" id="btnCig">我抽了一根（記錄現在時間）</button></div>
+    <div id="cravingForm" hidden style="margin-top:12px">
+      <b>記下這次的菸癮</b>
+      <label class="field"><span>有多想抽？（1 一點點 → 5 非常強烈）</span><div class="scale" id="cravLevel"></div></label>
+      <label class="field"><span>當時在做什麼／什麼引起的？</span><div class="chips" id="cravTrig"></div></label>
+      <div class="alert info" id="cravTip"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="btnResisted">我忍住了</button>
+        <button id="btnGaveIn">還是抽了</button>
+        <button class="small" id="btnCravCancel">取消</button>
+      </div>
+    </div>
+    <h3>今天的紀錄</h3>
+    <ul class="log" id="todayLog"></ul>
+  </div>
+  <div class="card">
+    <h2>今日日記</h2>
+    <div class="sub" id="journalStatus"></div>
+    <button class="primary" style="margin-top:8px" data-go="journal">填寫睡眠與心情</button>
+  </div>
+  <div class="card" id="benefitNow"></div>
+ </div>
+</section>
+
+<!-- =================== 加油（支持者） =================== -->
+<section class="tab" id="tab-cheer" hidden>
+ <div class="stack">
+  <div id="herAlert"></div>
+  <div class="stats">
+    <div class="stat"><div class="num" id="hQuit">–</div><div class="lbl">他戒菸第幾天</div></div>
+    <div class="stat"><div class="num" id="hChampix">–</div><div class="lbl">吃 Champix 第幾天</div></div>
+  </div>
+  <div class="card"><h2>他今天的狀況</h2><div id="hisToday"></div></div>
+  <div class="card">
+    <h2>給他今天的一句話</h2>
+    <p class="sub" style="margin:0">他打開 App 時，第一眼就會看到。</p>
+    <label class="field"><textarea id="cheerText" maxlength="500" aria-label="加油訊息" placeholder="例如：昨晚又睡不好吧？你已經撐過最難的兩週了，我很以你為榮。"></textarea></label>
+    <div class="quick" id="quickCheers"></div>
+    <div class="row" style="margin-top:10px"><button class="primary" id="btnSendCheer">送出加油</button></div>
+  </div>
+  <div class="card"><h2>我們的對話</h2><div class="thread" id="thread"></div></div>
+ </div>
+</section>
+
+<!-- =================== 日記 =================== -->
+<section class="tab" id="tab-journal" hidden>
+ <div class="stack">
+  <div class="card">
+    <div class="row between"><h2 style="margin:0">日記</h2><input type="date" id="jDate" aria-label="日期"></div>
+    <div id="jReadOnly" class="alert info" hidden style="margin-top:10px">這是他填寫的日記，你可以看但不能修改。</div>
+    <fieldset id="jFields" style="border:none;padding:0;margin:0">
+    <h3>昨晚睡得如何？</h3>
+    <label class="field"><span>睡眠品質（1 很差 → 5 很好）</span><div class="scale" id="jSleepQ"></div></label>
+    <div class="row">
+      <label class="field"><span>大約睡幾小時</span><input type="number" id="jSleepH" min="0" max="16" step="0.5" style="width:110px"></label>
+      <label class="field"><span>半夜醒來幾次</span><input type="number" id="jWake" min="0" max="20" style="width:110px"></label>
+      <label class="field"><span>幾點上床</span><input type="time" id="jBed" style="width:130px"></label>
+    </div>
+    <label class="field"><span>睡眠狀況（可複選）</span><div class="chips" id="jSleepTags"></div></label>
+    <h3>今天心情</h3>
+    <label class="field"><span>整體心情（1 很低落 → 5 很好）</span><div class="scale" id="jMood"></div></label>
+    <label class="field"><span>今天有的感覺／症狀（可複選）</span><div class="chips" id="jSymp"></div></label>
+    <h3>其他可能影響睡眠的</h3>
+    <div class="row">
+      <label class="field"><span>咖啡／茶／含咖啡因飲料（杯）</span><input type="number" id="jCaf" min="0" max="15" style="width:110px"></label>
+      <label class="field"><span>最後一杯幾點</span><input type="time" id="jCafT" style="width:130px"></label>
+      <label class="field"><span>運動（分鐘）</span><input type="number" id="jEx" min="0" max="300" style="width:110px"></label>
+    </div>
+    <label class="field"><span>備註</span><textarea id="jNote" placeholder="例如：下午很想抽，去散步 10 分鐘就好多了"></textarea></label>
+    <button class="primary" id="btnSaveJournal">儲存日記</button>
+    </fieldset>
+  </div>
+ </div>
+</section>
+
+<!-- =================== 趨勢 =================== -->
+<section class="tab" id="tab-trend" hidden>
+ <div class="stack">
+  <div class="card"><h2>睡不好，是藥還是戒斷？</h2><div id="insights" class="stack" style="margin-top:0"></div></div>
+  <div class="card">
+    <div class="row between"><h2 style="margin:0">最近趨勢</h2>
+      <select id="rangeSel" aria-label="範圍"><option value="14">最近 14 天</option><option value="30">最近 30 天</option></select></div>
+    <h3>睡眠品質（1–5）</h3><div class="chart" id="cSleep"></div>
+    <h3>心情（1–5）</h3><div class="chart" id="cMood"></div>
+    <h3>想抽菸的次數</h3><div class="chart" id="cCrav"></div>
+    <h3>抽了幾根</h3><div class="chart" id="cCig"></div>
+  </div>
+  <div class="card"><h2>表格</h2><div class="tbl"><table id="histTable"></table></div>
+    <button style="margin-top:10px" id="btnCSV">下載表格（CSV，回診給醫師看）</button></div>
+ </div>
+</section>
+
+<!-- =================== 知識 =================== -->
+<section class="tab" id="tab-learn" hidden>
+ <div class="stack">
+  <div class="alert crit">
+    <b>心情低落要特別注意</b><br>
+    Champix 仿單提醒：少數人用藥期間會出現情緒低落、焦躁、行為改變，甚至有傷害自己的念頭。戒菸本身也會讓心情變差，兩者自己很難分辨。
+    <b>如果低落持續好幾天、影響生活，或有任何不想活、傷害自己的念頭，請先停藥並盡快聯絡醫師。</b><br>
+    安心專線 <b>1925</b>（24 小時）・生命線 <b>1995</b>・張老師 <b>1980</b>・戒菸專線 <b>0800-63-63-63</b>
+  </div>
+  <div class="card">
+    <h2>睡不好的三個可能原因</h2>
+    <p class="sub">很常見，通常是暫時的，而且三種原因常同時存在。</p>
+    <div class="tbl"><table>
+      <tr><th></th><th>Champix 副作用</th><th>尼古丁戒斷</th><th>咖啡因變強</th></tr>
+      <tr><td>表現</td><td>失眠、<b>很鮮明或奇怪的夢</b>、惡夢</td><td>難入睡、半夜醒、睡得淺</td><td>難入睡、心悸、焦躁</td></tr>
+      <tr><td>多常見</td><td>失眠約 1～2 成，異常夢境約 1 成多</td><td>戒菸者很常見</td><td>戒菸後血中咖啡因可能變成原本約 2 倍</td></tr>
+      <tr><td>時間</td><td>整個用藥期間都可能；晚上那顆吃太晚較明顯</td><td>停菸第 1 週最明顯，通常 2～4 週改善</td><td>停菸後就開始</td></tr>
+      <tr><td>怎麼做</td><td>晚上那顆<b>晚餐後吃，別睡前吃</b>（兩顆間隔約 8 小時即可，請與醫師確認）；困擾就回診討論減量</td><td>固定作息、白天運動、睡前少滑手機</td><td>咖啡、茶<b>減半</b>，下午 2 點後不喝</td></tr>
+    </table></div>
+    <p class="muted">「趨勢」頁會比較晚上吃藥時間、咖啡因、戒菸天數和睡眠的關係。最後請把紀錄給醫師看，由醫師決定要不要調整。</p>
+  </div>
+  <div class="card">
+    <h2>Champix 小提醒</h2>
+    <ul class="sub" style="padding-left:20px;margin:0">
+      <li>標準療程：第 1–3 天 0.5 mg 一天一次；第 4–7 天 0.5 mg 一天兩次；第 8 天起 1 mg 一天兩次，通常共 12 週。實際依醫師處方。</li>
+      <li><b>飯後</b>配一整杯水吃，可以減少噁心。</li>
+      <li>忘記吃：想起來就補；快到下一次就跳過，<b>不要一次吃兩顆</b>。</li>
+      <li>不要自己突然停藥，想停或想調整都先問醫師。</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>戒斷症狀會持續多久</h2>
+    <div class="tbl"><table>
+      <tr><th>症狀</th><th>通常持續</th></tr>
+      <tr><td>強烈想抽菸</td><td>每次 3～5 分鐘就退；2～4 週後明顯變少</td></tr>
+      <tr><td>煩躁、易怒、焦慮</td><td>約 2～4 週</td></tr>
+      <tr><td>心情低落</td><td>約 2～4 週（持續或嚴重請看醫師）</td></tr>
+      <tr><td>失眠、睡不好</td><td>約 1～4 週</td></tr>
+      <tr><td>注意力不集中</td><td>約 2 週</td></tr>
+      <tr><td>食慾增加</td><td>可能 10 週以上</td></tr>
+      <tr><td>咳嗽變多</td><td>幾週，是肺在清理</td></tr>
+      <tr><td>便秘</td><td>約 4 週</td></tr>
+    </table></div>
+  </div>
+  <div class="card"><h2>戒菸的好處</h2><div class="timeline" id="benefitTimeline"></div></div>
+  <div class="card">
+    <h2>菸癮來時：4D 法</h2>
+    <ul class="sub" style="padding-left:20px;margin:0">
+      <li><b>延遲</b>：跟自己說「等 5 分鐘再說」。</li>
+      <li><b>深呼吸</b>：吸 4 秒、停 4 秒、吐 6 秒，做 5 次。</li>
+      <li><b>喝水</b>：慢慢喝一大杯冰水。</li>
+      <li><b>做別的事</b>：散步、刷牙、嚼口香糖、傳訊息給她。</li>
+    </ul>
+  </div>
+ </div>
+</section>
+
+<!-- =================== 設定 =================== -->
+<section class="tab" id="tab-setup" hidden>
+ <div class="stack">
+  <div class="card">
+    <h2>基本設定</h2>
+    <label class="field"><span>開始吃 Champix 的日期</span><input type="date" id="setChampix"></label>
+    <label class="field"><span>戒菸日（最後一根菸的隔天）</span><input type="date" id="setQuit"></label>
+    <div class="row">
+      <label class="field"><span>早上吃藥時間</span><input type="time" id="setAM"></label>
+      <label class="field"><span>晚上吃藥時間</span><input type="time" id="setPM"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span>以前一天抽幾根</span><input type="number" id="setCpd" min="0" style="width:110px"></label>
+      <label class="field"><span>一包多少錢</span><input type="number" id="setPrice" min="0" style="width:110px"></label>
+      <label class="field"><span>寫日記提醒時間</span><input type="time" id="setJournal"></label>
+    </div>
+    <button class="primary" id="btnSaveSettings">儲存設定</button>
+  </div>
+  <div class="card" id="shareCard" hidden>
+    <h2>傳給他的專屬連結</h2>
+    <p class="sub">輸入他的密碼（就是你在 Google 試算表程式裡設定的戒菸者密碼），產生一個連結用 LINE 傳給他。他點開就會自動登入，不用自己輸入。</p>
+    <label class="field"><span>他的密碼</span><input class="full" id="shareCode" type="text" autocomplete="off"></label>
+    <button id="btnMakeLink">產生連結</button>
+    <div id="shareOut" style="margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <h2>手機提醒</h2>
+    <p class="sub">按下面的按鈕會開啟 Google 日曆，按「儲存」後每天會準時跳通知（連續 90 天），就算沒打開這個 App 也會提醒。</p>
+    <div class="stack" style="margin-top:6px" id="calLinks"></div>
+  </div>
+  <div class="card">
+    <h2>加到手機主畫面</h2>
+    <p class="sub">iPhone：用 Safari 打開 → 分享 → 加入主畫面。<br>Android：用 Chrome 打開 → 右上角選單 → 加到主畫面。</p>
+    <button class="small" id="btnLogout">登出這支手機</button>
+  </div>
+  <p class="muted" style="text-align:center">本 App 的資訊僅供參考，不能取代醫師或藥師的建議。</p>
+ </div>
+</section>
+</div>
+
+<nav id="nav" hidden></nav>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ================= 工具 ================= */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const parseYmd = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+const dayDiff = (a,b) => Math.round((parseYmd(a)-parseYmd(b))/86400000);
+const today = () => ymd(new Date());
+const addDays = (s,n) => { const d=parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const md = s => { const d=parseYmd(s); return `${d.getMonth()+1}/${d.getDate()}`; };
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o||{}));
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2800); }
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+
+/* ================= 狀態與連線 ================= */
+const CONN_KEY='quitApp.conn', CACHE_KEY='quitApp.cache';
+const DEFAULTS = { champixStart:'', quitDate:'', doseAM:'08:00', dosePM:'18:30', cpd:20, price:125, journalTime:'21:30' };
+const ST = { settings:{...DEFAULTS}, days:{}, cheers:[], replies:[], role:null, tab:null };
+const S = () => ST.settings;
+let CONN = store.get(CONN_KEY);
+const dayOf = d => { const x=ST.days[d]||{}; return {...x, cigs:x.cigs||[], cravings:x.cravings||[]}; };
+
+function applyData(j){
+  ST.role=j.role; ST.settings={...DEFAULTS,...(j.settings||{})}; ST.days=j.days||{}; ST.cheers=j.cheers||[]; ST.replies=j.replies||[];
+  store.set(CACHE_KEY,{role:j.role,settings:j.settings,days:j.days,cheers:j.cheers,replies:j.replies,at:Date.now()});
+}
+async function call(action, payload={}, conn=CONN){
+  const r = await fetch(conn.api,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,code:conn.code,...payload})});
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error||'失敗');
+  return j;
+}
+// 寫入排隊，一次一筆
+let queue = Promise.resolve(), pending = 0;
+function send(action,payload,okMsg){
+  pending++; setStatus();
+  queue = queue.then(()=>call(action,payload)).then(j=>{ pending--; applyData(j); render(); setStatus(); if(okMsg) toast(okMsg); })
+    .catch(e=>{ pending--; setStatus('儲存失敗：'+e.message+'。請檢查網路後重新整理。'); toast('儲存失敗：'+e.message); });
+  return queue;
+}
+let lastSync=null;
+function setStatus(msg){
+  $('connStatus').textContent = msg || (pending ? '儲存中…' : lastSync ? `已同步 ${hm(lastSync)}` : '');
+}
+async function refresh(){
+  if(!CONN || pending) return;
+  try{ const j=await call('load'); applyData(j); lastSync=new Date(); setStatus(); render(); }
+  catch(e){ setStatus('無法同步（'+e.message+'），顯示的是上次的資料'); }
+}
+
+/* ================= 導覽 ================= */
+const ICONS = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  cheer:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  journal:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+  trend:'<path d="M4 19h16M6 15l4-4 3 3 5-6"/>',
+  learn:'<path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/>',
+  setup:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>'
+};
+function buildNav(){
+  const tabs = ST.role==='her'
+    ? [['cheer','加油'],['journal','他的日記'],['trend','趨勢'],['learn','知識'],['setup','設定']]
+    : [['home','今天'],['journal','日記'],['trend','趨勢'],['learn','知識'],['setup','設定']];
+  $('nav').innerHTML = tabs.map(([k,l])=>`<button data-tab="${k}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${l}</button>`).join('');
+  $('nav').hidden=false;
+  $('whoLabel').textContent = ST.role==='her' ? '支持者模式・給他打氣' : '戒菸者模式';
+  $('appTitle').textContent = '寶貝的戒菸紀錄';
+  $('shareCard').hidden = ST.role!=='her';
+}
+$('nav').onclick = e => { const b=e.target.closest('button[data-tab]'); if(b) go(b.dataset.tab); };
+function go(tab){
+  ST.tab = tab;
+  document.querySelectorAll('.tab').forEach(s=>s.hidden = s.id!=='tab-'+tab);
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.tab===tab));
+  if(tab==='journal'){ if(!$('jDate').value) $('jDate').value=today(); loadJournal(); }
+  if(tab==='setup') loadSettings();
+  render(); window.scrollTo(0,0);
+}
+document.addEventListener('click', e=>{ const g=e.target.closest('[data-go]'); if(g) go(g.dataset.go); });
+
+/* ================= 常數 ================= */
+const SLEEP_FACES=['😫','😕','😐','🙂','😴'], MOOD_FACES=['😢','😞','😐','🙂','😄'];
+const TRIGGERS=['飯後','喝咖啡','喝酒','壓力／工作','無聊','開車','起床後','看到別人抽','心情不好','睡不著','其他'];
+const SLEEP_TAGS=['難入睡','半夜醒來','太早醒','很鮮明的夢','做惡夢','睡很淺','醒來還很累','睡得不錯'];
+const SYMPTOMS=['很想抽菸','煩躁易怒','焦慮','沮喪低落','注意力差','食慾變大','頭痛','噁心','便秘','白天想睡','咳嗽'];
+const CRAV_TIPS=['菸癮通常 3～5 分鐘就會退，先倒數 5 分鐘。','深呼吸：吸 4 秒、停 4 秒、吐 6 秒，做 5 次。','去喝一大杯冰水，或刷個牙。','起來走一走，離開現在的位置 5 分鐘。','傳個訊息給她，說你正在跟菸癮對抗。','嚼無糖口香糖或吃點蔬菜條，讓手和嘴有事做。'];
+const QUICK_CHEERS=['你已經撐過最難的那段了，我很以你為榮 ❤️','昨晚睡不好辛苦了，今天累了就早點休息','想抽的時候傳訊息給我，我陪你撐 5 分鐘','不管今天怎樣，我都在你身邊','今天也是沒抽菸的一天，超棒！','抽了一根也沒關係，我們明天繼續'];
+const BENEFITS=[[20/1440,'20 分鐘','心跳和血壓開始下降'],[0.5,'12 小時','血中一氧化碳降回正常，血液帶氧量變好'],[1,'1 天','心臟病發作的風險開始下降'],[2,'2 天','嗅覺和味覺開始恢復'],[3,'3 天','體內尼古丁幾乎排光；戒斷感這幾天最強，撐過去會漸漸輕鬆'],[14,'2 週','血液循環改善，走路、爬樓梯比較不喘'],[30,'1 個月','大多數戒斷症狀（煩躁、失眠、注意力差）明顯減輕'],[90,'3 個月','肺功能可提升約 10%，咳嗽、喘減少'],[270,'9 個月','肺部纖毛恢復，清痰能力變好，感染變少'],[365,'1 年','冠狀動脈心臟病風險降到抽菸者的一半'],[1825,'5 年','中風風險明顯下降；口腔、喉嚨、食道癌風險減半'],[3650,'10 年','肺癌死亡風險約降為抽菸者的一半'],[5475,'15 年','心臟病風險接近從不抽菸的人']];
+
+/* ================= 共用元件 ================= */
+function scale(el, faces){
+  el.innerHTML = faces.map((f,i)=>`<button type="button" data-v="${i+1}" aria-label="${i+1} 分">${f}</button>`).join('');
+  el.onclick = e => { const b=e.target.closest('button'); if(!b||el.dataset.ro) return; const v=+b.dataset.v; setScale(el, +el.dataset.val===v?'':v); };
+}
+function setScale(el,v){ el.dataset.val=v||''; el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+v)); }
+function chips(el,list){
+  el.innerHTML = list.map(t=>`<button type="button" class="chip" data-v="${esc(t)}">${esc(t)}</button>`).join('');
+  el.onclick = e => { const b=e.target.closest('button'); if(b&&!el.dataset.ro) b.classList.toggle('on'); };
+}
+const getChips = el => [...el.querySelectorAll('.chip.on')].map(b=>b.dataset.v);
+const setChips = (el,v=[]) => el.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',(v||[]).includes(b.dataset.v)));
+
+/* ================= 計算 ================= */
+const champixDay = () => S().champixStart ? dayDiff(today(),S().champixStart)+1 : null;
+const quitDays = () => S().quitDate ? dayDiff(today(),S().quitDate) : null;
+const quitElapsed = () => S().quitDate ? (new Date()-parseYmd(S().quitDate))/86400000 : null;
+function champixDose(n){
+  if(!n||n<1) return null;
+  if(n<=3) return {am:'0.5 mg',pm:null,note:'第 1–3 天：0.5 mg 一天一次'};
+  if(n<=7) return {am:'0.5 mg',pm:'0.5 mg',note:'第 4–7 天：0.5 mg 一天兩次'};
+  return {am:'1 mg',pm:'1 mg',note:`第 ${n} 天：1 mg 一天兩次（標準療程約到第 84 天，實際依醫師處方）`};
+}
+function avoidedCigs(){
+  const q=quitDays(); if(q===null||q<0) return null; const now=new Date(); let a=0;
+  for(let i=0;i<=q;i++){ const d=addDays(S().quitDate,i); const real=dayOf(d).cigs.length;
+    const frac = d===today() ? (now.getHours()*60+now.getMinutes())/1440 : 1; a+=Math.max(0,S().cpd*frac-real); }
+  return Math.floor(a);
+}
+function lowMood(){
+  const r=[]; for(let i=0;i<7&&r.length<3;i++){ const m=ST.days[addDays(today(),-i)]?.mood; if(m) r.push(m); }
+  return r.length===3 && r.every(m=>m<=2);
+}
+const latestCheer = () => ST.cheers.length ? ST.cheers[ST.cheers.length-1] : null;
+const fmtTs = ts => { const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${hm(d)}`; };
+function saveDay(date,d){ ST.days[date]=d; render(); return send('saveDay',{date,day:d}); }
+
+/* ================= 戒菸者：今天 ================= */
+function renderHome(){
+  const q=quitDays(), c=champixDay(), av=avoidedCigs();
+  $('sQuit').textContent = q===null?'?':(q<0?`倒數 ${-q}`:q+1);
+  $('sChampix').textContent = c??'?';
+  $('sAvoided').textContent = av??'–';
+  $('sMoney').textContent = av===null?'–':Math.round(av*S().price/20).toLocaleString();
+  $('setupAlert').innerHTML = S().quitDate ? '' : `<div class="alert info">還沒設定<b>戒菸日</b>，設定後就能看到戒菸天數和身體恢復進度。 <button class="small primary" data-go="setup">去設定</button></div>`;
+
+  const ch=latestCheer();
+  if(ch){
+    const replied=ST.replies.some(r=>r.cheerId===ch.id);
+    $('herNote').innerHTML=`<div class="note"><div class="from">她留給你的話・${esc(fmtTs(ch.ts))}</div><div class="msg"></div>
+      <div class="row">${replied?'<span class="muted">你已經回覆了</span>':`<button class="heart small" data-heart="${esc(ch.id)}">❤️ 收到了</button>`}
+      <input id="replyText" aria-label="回覆" placeholder="回她一句話…" style="flex:1;min-width:0" maxlength="300"><button class="small" id="btnReply">回覆</button></div></div>`;
+    $('herNote').querySelector('.msg').textContent=ch.text;
+  } else $('herNote').innerHTML='';
+
+  $('moodAlert').innerHTML = lowMood() ? `<div class="alert crit"><b>你最近幾天心情都很低落，辛苦了。</b><br>戒菸和 Champix 都可能影響情緒，這不是你不夠堅強。建議這幾天聯絡開藥的醫師或戒菸門診；如果有傷害自己的念頭，請先停藥並立刻撥安心專線 <b>1925</b>（24 小時）。</div>` : '';
+
+  const dose=champixDose(c), d=dayOf(today()), rows=[];
+  if(dose){ rows.push(['am','早上',S().doseAM,dose.am]); if(dose.pm) rows.push(['pm','晚上',S().dosePM,dose.pm]); }
+  $('doseList').innerHTML = rows.map(([k,l,t,mg])=>{ const tk=d['dose_'+k];
+    return `<div class="dose"><div><b>${l} ${mg}</b> <span class="muted">提醒 ${t}</span><br>${tk?`<span class="pill ok">已在 ${tk} 吃了</span>`:'<span class="pill no">還沒吃</span>'}</div>
+    ${tk?`<button class="small" data-undo="${k}">取消</button>`:`<button class="primary" data-take="${k}">吃了</button>`}</div>`; }).join('')
+    || '<div class="muted">請到「設定」填寫開始吃 Champix 的日期。</div>';
+  $('doseHint').textContent = dose ? dose.note+'。飯後配一大杯水吃。' : '';
+
+  const items=[...d.cigs.map((x,i)=>({t:x.time,h:'抽了一根',del:`cigs:${i}`})),
+    ...d.cravings.map((x,i)=>({t:x.time,h:`${x.resisted?'想抽，忍住了 💪':'想抽'}（強度 ${x.level||'?'}）${x.trigger?'・'+esc(x.trigger):''}`,del:`cravings:${i}`}))].sort((a,b)=>a.t.localeCompare(b.t));
+  const res=d.cravings.filter(x=>x.resisted).length;
+  $('todayLog').innerHTML = items.length
+    ? items.map(x=>`<li><span>${x.t}　${x.h}</span><button class="small" data-del="${x.del}">刪除</button></li>`).join('')+`<li><span class="sub">今天抽 ${d.cigs.length} 根・想抽 ${d.cravings.length} 次・忍住 ${res} 次</span></li>`
+    : '<li><span class="muted">今天還沒有紀錄。沒想抽是最好的。</span></li>';
+  $('journalStatus').innerHTML = (d.sleepQ||d.mood) ? `已記錄：睡眠 ${d.sleepQ?SLEEP_FACES[d.sleepQ-1]:'–'}　心情 ${d.mood?MOOD_FACES[d.mood-1]:'–'}` : '今天還沒寫。花 30 秒記下昨晚睡眠和今天心情。';
+  renderBenefitNow();
+}
+$('tab-home').addEventListener('click', e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  const date=today();
+  if(t.dataset.take){ const d=dayOf(date); d['dose_'+t.dataset.take]=hm(new Date()); saveDay(date,d); toast('已記錄吃藥'); }
+  else if(t.dataset.undo){ const d=dayOf(date); delete d['dose_'+t.dataset.undo]; saveDay(date,d); }
+  else if(t.dataset.del){ const [k,i]=t.dataset.del.split(':'); const d=clone(dayOf(date)); d[k].splice(+i,1); saveDay(date,d); }
+  else if(t.dataset.heart){ send('addReply',{cheerId:t.dataset.heart,text:'❤️ 收到了'},'已回覆她 ❤️'); }
+  else if(t.id==='btnReply'){ const v=$('replyText').value.trim(), ch=latestCheer(); if(v&&ch) send('addReply',{cheerId:ch.id,text:v},'已回覆她 ❤️'); }
+});
+$('btnCig').onclick=()=>{ const date=today(), d=clone(dayOf(date)); d.cigs.push({time:hm(new Date())}); saveDay(date,d); toast('已記錄。抽了一根不等於失敗，繼續下去就好'); };
+$('btnCrave').onclick=()=>{ $('cravingForm').hidden=false; setScale($('cravLevel'),''); setChips($('cravTrig'),[]); $('cravTip').textContent=CRAV_TIPS[Math.floor(Math.random()*CRAV_TIPS.length)]; $('cravingForm').scrollIntoView({behavior:'smooth',block:'center'}); };
+$('btnCravCancel').onclick=()=>$('cravingForm').hidden=true;
+function saveCraving(resisted){
+  const date=today(), d=clone(dayOf(date)), t=hm(new Date());
+  d.cravings.push({time:t,level:+$('cravLevel').dataset.val||null,trigger:getChips($('cravTrig')).join('、'),resisted});
+  if(!resisted) d.cigs.push({time:t});
+  $('cravingForm').hidden=true; saveDay(date,d);
+  toast(resisted?'太棒了，又贏了一次菸癮':'沒關係，下一次再試。你還在路上');
+}
+$('btnResisted').onclick=()=>saveCraving(true); $('btnGaveIn').onclick=()=>saveCraving(false);
+
+function renderBenefitNow(){
+  const e=quitElapsed(), el=$('benefitNow');
+  if(e===null||e<0){ el.innerHTML=`<h2>戒菸的好處</h2><div class="sub">停菸 20 分鐘後心跳血壓開始下降；1 個月後大多數戒斷症狀明顯減輕。</div>`; return; }
+  let last=null,next=null; BENEFITS.forEach(b=>{ if(e>=b[0]) last=b; else if(!next) next=b; });
+  const q=Math.floor(e);
+  const sleep = q<7?'現在是戒斷最強的第一週，睡不好、煩躁都很正常，會過去的。'
+    : q<28?'戒斷造成的失眠通常 2～4 週內慢慢改善，你正走在這段路上。'
+    : '已經超過 4 週，如果還是一直睡不好，比較可能跟藥物或咖啡因有關，可以和醫師討論。';
+  el.innerHTML=`<h2>你的身體正在恢復</h2>${last?`<div>已達成「${last[1]}」：${last[2]}</div>`:''}
+    ${next?`<div class="sub" style="margin-top:4px">下一個里程碑「${next[1]}」：${next[2]}（還有 ${Math.ceil(next[0]-e)} 天）</div>`:''}
+    <div class="alert info" style="margin-top:10px">${sleep}</div>`;
+}
+
+/* ================= 支持者：加油 ================= */
+function renderCheer(){
+  const q=quitDays(), c=champixDay(), d=dayOf(today());
+  $('hQuit').textContent = q===null?'?':(q<0?`倒數 ${-q}`:q+1);
+  $('hChampix').textContent = c??'?';
+  $('herAlert').innerHTML = lowMood()
+    ? `<div class="alert crit"><b>他最近 3 天心情都很低落。</b><br>這可能是戒斷，也可能和 Champix 有關。多陪陪他，也可以鼓勵他這幾天回診跟醫師說。如果他提到不想活或想傷害自己，請陪他立刻求助：安心專線 <b>1925</b>（24 小時）。</div>`
+    : (S().quitDate?'':`<div class="alert info">還沒設定戒菸日，可以到「設定」幫他填。</div>`);
+  const dose=champixDose(c);
+  const doses = dose ? [`早上 ${d.dose_am?`已吃（${d.dose_am}）`:'還沒吃'}`, dose.pm?`晚上 ${d.dose_pm?`已吃（${d.dose_pm}）`:'還沒吃'}`:null].filter(Boolean).join('・') : '未設定';
+  const res=d.cravings.filter(x=>x.resisted).length;
+  $('hisToday').innerHTML = `<div class="tbl"><table>
+    <tr><td>Champix</td><td>${doses}</td></tr>
+    <tr><td>想抽菸</td><td>${d.cravings.length} 次，忍住 ${res} 次</td></tr>
+    <tr><td>抽菸</td><td>${d.cigs.length} 根${d.cigs.length?'（'+d.cigs.map(x=>x.time).join('、')+'）':''}</td></tr>
+    <tr><td>昨晚睡眠</td><td>${d.sleepQ?`${SLEEP_FACES[d.sleepQ-1]} ${d.sleepQ} 分`:'還沒填'}${d.sleepH!=null?`・${esc(d.sleepH)} 小時`:''}${(d.sleepTags||[]).length?'・'+esc(d.sleepTags.join('、')):''}</td></tr>
+    <tr><td>心情</td><td>${d.mood?`${MOOD_FACES[d.mood-1]} ${d.mood} 分`:'還沒填'}${(d.symptoms||[]).length?'・'+esc(d.symptoms.join('、')):''}</td></tr>
+    ${d.note?`<tr><td>他寫的</td><td>${esc(d.note)}</td></tr>`:''}</table></div>`;
+  const items=[...ST.cheers.map(x=>({...x,who:'her'})),...ST.replies.map(x=>({...x,who:'him'}))].sort((a,b)=>a.ts-b.ts).slice(-30);
+  $('thread').innerHTML = items.length ? items.map(x=>`<div class="bubble ${x.who}">${esc(x.text)}<span class="t">${x.who==='her'?'你':'他'}・${esc(fmtTs(x.ts))}</span></div>`).join('') : '<div class="muted">還沒有訊息。寫下第一句加油吧。</div>';
+}
+$('quickCheers').innerHTML = QUICK_CHEERS.map(t=>`<button type="button">${esc(t)}</button>`).join('');
+$('quickCheers').onclick = e => { const b=e.target.closest('button'); if(b) $('cheerText').value=b.textContent; };
+$('btnSendCheer').onclick = () => {
+  const text=$('cheerText').value.trim(); if(!text) return;
+  $('btnSendCheer').disabled=true;
+  send('addCheer',{text},'已送出，他打開 App 就會看到 ❤️').then(()=>{ $('cheerText').value=''; $('btnSendCheer').disabled=false; });
+};
+
+/* ================= 日記 ================= */
+scale($('jSleepQ'),SLEEP_FACES); scale($('jMood'),MOOD_FACES); chips($('jSleepTags'),SLEEP_TAGS); chips($('jSymp'),SYMPTOMS);
+scale($('cravLevel'),['1','2','3','4','5']); chips($('cravTrig'),TRIGGERS);
+$('jDate').onchange=loadJournal;
+function loadJournal(){
+  const ro = ST.role==='her';
+  $('jReadOnly').hidden=!ro; $('jFields').disabled=ro; $('btnSaveJournal').hidden=ro;
+  ['jSleepQ','jMood','jSleepTags','jSymp'].forEach(id=>{ if(ro) $(id).dataset.ro='1'; else delete $(id).dataset.ro; });
+  const d=ST.days[$('jDate').value]||{};
+  setScale($('jSleepQ'),d.sleepQ); setScale($('jMood'),d.mood); setChips($('jSleepTags'),d.sleepTags); setChips($('jSymp'),d.symptoms);
+  const v=(id,x)=>$(id).value=x??''; v('jSleepH',d.sleepH); v('jWake',d.wake); v('jBed',d.bed); v('jCaf',d.caf); v('jCafT',d.cafT); v('jEx',d.ex); v('jNote',d.note);
+}
+$('btnSaveJournal').onclick=()=>{
+  const date=$('jDate').value||today(), d=clone(dayOf(date));
+  const num=id=>{const x=$(id).value; return x===''?null:+x;};
+  d.sleepQ=+$('jSleepQ').dataset.val||null; d.mood=+$('jMood').dataset.val||null;
+  d.sleepTags=getChips($('jSleepTags')); d.symptoms=getChips($('jSymp'));
+  d.sleepH=num('jSleepH'); d.wake=num('jWake'); d.caf=num('jCaf'); d.ex=num('jEx');
+  d.bed=$('jBed').value; d.cafT=$('jCafT').value; d.note=$('jNote').value;
+  saveDay(date,d); toast(d.mood&&d.mood<=2?'記下來了。今天辛苦了，低落的感覺會過去的':'日記已儲存'); go('home');
+};
+
+/* ================= 趨勢 ================= */
+$('rangeSel').onchange=()=>render();
+function chart(el,dates,vals,{max,fmt,kind='bar'}){
+  const W=640,H=150,L=28,R=10,T=12,B=22,n=dates.length,cw=(W-L-R)/n;
+  const mx=max||Math.max(4,...vals.filter(v=>v!=null)); const y=v=>T+(H-T-B)*(1-v/mx);
+  let g=''; const ticks=max===5?[1,3,5]:[0,Math.round(mx/2),mx];
+  ticks.forEach(t=>g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text class="axis" x="${L-6}" y="${y(t)+3}" text-anchor="end">${t}</text>`);
+  const step=Math.ceil(n/7); dates.forEach((d,i)=>{ if(i%step===0) g+=`<text class="axis" x="${L+cw*i+cw/2}" y="${H-6}" text-anchor="middle">${md(d)}</text>`; });
+  if(kind==='line'){
+    let p='',prev=false; vals.forEach((v,i)=>{ if(v==null){prev=false;return;} const x=L+cw*i+cw/2; p+=(prev?'L':'M')+x+' '+y(v); prev=true; });
+    g+=`<path d="${p}" fill="none" stroke="var(--series)" stroke-width="2" stroke-linejoin="round"/>`;
+    vals.forEach((v,i)=>{ if(v!=null) g+=`<circle cx="${L+cw*i+cw/2}" cy="${y(v)}" r="4" fill="var(--series)" stroke="var(--surface)" stroke-width="2"/>`; });
+  } else {
+    const bw=Math.max(3,Math.min(22,cw-2));
+    vals.forEach((v,i)=>{ if(!v) return; const x=L+cw*i+(cw-bw)/2, top=y(v), h=(H-B)-top, r=Math.min(4,bw/2,h);
+      g+=`<path d="M${x} ${H-B}V${top+r}Q${x} ${top} ${x+r} ${top}H${x+bw-r}Q${x+bw} ${top} ${x+bw} ${top+r}V${H-B}Z" fill="var(--series)"/>`; });
+  }
+  dates.forEach((d,i)=>g+=`<rect x="${L+cw*i}" y="${T}" width="${cw}" height="${H-T-B}" fill="transparent" data-i="${i}"/>`);
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="趨勢圖">${g}</svg><div class="tip" hidden></div>`;
+  const tip=el.querySelector('.tip'), svg=el.querySelector('svg');
+  const show=e=>{ const r=e.target.closest('rect[data-i]'); if(!r){tip.hidden=true;return;} const i=+r.dataset.i, sx=svg.getBoundingClientRect().width/W;
+    tip.textContent=`${md(dates[i])}：${vals[i]==null?'未記錄':fmt(vals[i])}`; tip.style.left=(L+cw*i+cw/2)*sx+'px'; tip.style.top=y(vals[i]??0)*sx+'px'; tip.hidden=false; };
+  svg.addEventListener('pointermove',show); svg.addEventListener('click',show); svg.addEventListener('pointerleave',()=>tip.hidden=true);
+}
+function renderTrend(){
+  const n=+$('rangeSel').value, dates=[]; for(let i=n-1;i>=0;i--) dates.push(addDays(today(),-i));
+  const D=dates.map(dayOf);
+  chart($('cSleep'),dates,D.map(d=>d.sleepQ||null),{max:5,kind:'line',fmt:v=>`${v} 分 ${SLEEP_FACES[v-1]}`});
+  chart($('cMood'),dates,D.map(d=>d.mood||null),{max:5,kind:'line',fmt:v=>`${v} 分 ${MOOD_FACES[v-1]}`});
+  chart($('cCrav'),dates,D.map(d=>d.cravings.length),{fmt:v=>`想抽 ${v} 次`});
+  chart($('cCig'),dates,D.map(d=>d.cigs.length),{fmt:v=>`抽 ${v} 根`});
+  $('histTable').innerHTML='<tr><th>日期</th><th>睡眠</th><th>時數</th><th>心情</th><th>想抽</th><th>抽</th><th>晚上吃藥</th><th>咖啡因</th></tr>'+
+    dates.slice().reverse().map(d=>{const x=dayOf(d); return `<tr><td>${md(d)}</td><td>${x.sleepQ??'–'}</td><td>${esc(x.sleepH??'–')}</td><td>${x.mood??'–'}</td><td>${x.cravings.length}</td><td>${x.cigs.length}</td><td>${esc(x.dose_pm??'–')}</td><td>${esc(x.caf??'–')}</td></tr>`;}).join('');
+  renderInsights();
+}
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const toMin=t=>{ if(!t) return null; const [h,m]=t.split(':').map(Number); return h*60+m; };
+function renderInsights(){
+  const P=[]; Object.keys(ST.days).sort().forEach(d=>{ const q=ST.days[d].sleepQ; if(!q) return; const prev=ST.days[addDays(d,-1)]||{};
+    P.push({d,q,pm:toMin(prev.dose_pm),caf:prev.caf,cafT:toMin(prev.cafT),tags:ST.days[d].sleepTags||[],qd:S().quitDate?dayDiff(d,S().quitDate):null}); });
+  const out=[], f=x=>x.toFixed(1);
+  if(P.length<5) out.push(`<div class="alert info">目前有 ${P.length} 天的睡眠紀錄，<b>累積 5 天以上</b>就會開始分析。每天早上填「昨晚睡得如何」，晚上吃藥時按「吃了」。</div>`);
+  const late=P.filter(p=>p.pm!=null&&p.pm>=1200).map(p=>p.q), early=P.filter(p=>p.pm!=null&&p.pm<1200).map(p=>p.q);
+  if(late.length>=2&&early.length>=2){ const dl=avg(early)-avg(late);
+    out.push(`<div class="alert ${dl>=.5?'warn':'good'}"><b>晚上吃藥時間</b><br>晚上 8 點前吃藥的隔天，睡眠平均 ${f(avg(early))} 分；8 點後吃的隔天平均 ${f(avg(late))} 分。${dl>=.5?'吃得晚似乎睡得比較差，試著固定在晚餐後吃。':'目前看不出吃藥時間有明顯影響。'}</div>`); }
+  const hiC=x=>x.caf>=2||(x.cafT!=null&&x.cafT>=840);
+  const hi=P.filter(p=>p.caf!=null&&hiC(p)).map(p=>p.q), lo=P.filter(p=>p.caf!=null&&!hiC(p)).map(p=>p.q);
+  if(hi.length>=2&&lo.length>=2){ const dl=avg(lo)-avg(hi);
+    out.push(`<div class="alert ${dl>=.5?'warn':'good'}"><b>咖啡因</b><br>咖啡因少（1 杯以下且下午 2 點前）的隔天平均 ${f(avg(lo))} 分；喝較多或較晚的隔天平均 ${f(avg(hi))} 分。${dl>=.5?'咖啡因可能是原因之一。戒菸後身體代謝咖啡因變慢，同樣的量效果更強。':'目前看不出咖啡因有明顯影響。'}</div>`); }
+  const r7=P.filter(p=>dayDiff(today(),p.d)<7).map(p=>p.q), p7=P.filter(p=>{const k=dayDiff(today(),p.d);return k>=7&&k<14;}).map(p=>p.q);
+  if(r7.length>=3&&p7.length>=3){ const dl=avg(r7)-avg(p7);
+    out.push(`<div class="alert ${dl>.3?'good':'info'}"><b>跟上週比</b><br>最近 7 天睡眠平均 ${f(avg(r7))} 分，前一週 ${f(avg(p7))} 分。${dl>.3?'正在變好，符合戒斷症狀逐漸消退的模式。':dl<-.3?'這週比較差一些。':'差不多持平。'}</div>`); }
+  const w1=P.filter(p=>p.qd!=null&&p.qd>=0&&p.qd<7).map(p=>p.q), w3=P.filter(p=>p.qd!=null&&p.qd>=14).map(p=>p.q);
+  if(w1.length>=3&&w3.length>=3){ const dl=avg(w3)-avg(w1);
+    out.push(`<div class="alert info"><b>戒菸第 1 週 vs 第 3 週以後</b><br>第 1 週平均 ${f(avg(w1))} 分，第 3 週以後平均 ${f(avg(w3))} 分。${dl>=.5?'隨時間改善，比較像<b>戒斷症狀</b>，會繼續變好。':'沒有隨時間改善，比較可能和<b>藥物</b>（或咖啡因、壓力）有關，建議回診討論是否調整劑量。'}</div>`); }
+  const dr=P.filter(p=>p.tags.includes('很鮮明的夢')||p.tags.includes('做惡夢')).length;
+  if(P.length>=5&&dr/P.length>=.4) out.push(`<div class="alert warn"><b>鮮明的夢／惡夢</b><br>${dr} / ${P.length} 天記錄到很鮮明的夢或惡夢。這是 Champix 很典型的副作用，戒斷本身比較少造成。很困擾的話，可以請醫師評估晚上那顆提早吃或減量。</div>`);
+  out.push(`<p class="muted" style="margin:0">這是根據紀錄做的簡單比較，天數少時不一定準。</p>`);
+  $('insights').innerHTML=out.join('');
+}
+$('btnCSV').onclick=()=>{
+  const rows=[['日期','戒菸第幾天','Champix第幾天','早上吃藥','晚上吃藥','睡眠品質','睡眠時數','半夜醒','上床時間','睡眠狀況','心情','症狀','想抽次數','忍住次數','抽菸根數','抽菸時間','咖啡因杯數','最後咖啡因','運動分鐘','備註']];
+  Object.keys(ST.days).sort().forEach(d=>{const x=dayOf(d); rows.push([d,S().quitDate?dayDiff(d,S().quitDate)+1:'',S().champixStart?dayDiff(d,S().champixStart)+1:'',x.dose_am||'',x.dose_pm||'',x.sleepQ??'',x.sleepH??'',x.wake??'',x.bed||'',(x.sleepTags||[]).join('、'),x.mood??'',(x.symptoms||[]).join('、'),x.cravings.length,x.cravings.filter(c=>c.resisted).length,x.cigs.length,x.cigs.map(c=>c.time).join(' '),x.caf??'',x.cafT||'',x.ex??'',x.note||'']);});
+  const csv='﻿'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=`戒菸紀錄-${today()}.csv`; a.click();
+};
+
+/* ================= 知識 ================= */
+function renderBenefits(){
+  const e=quitElapsed(); let ni=-1; if(e!==null) BENEFITS.forEach((b,i)=>{ if(e>=b[0]) ni=i; });
+  $('benefitTimeline').innerHTML=(e===null?'<p class="muted">設定戒菸日後，這裡會標示已經達成的里程碑。</p>':'')+
+    BENEFITS.map((b,i)=>`<div class="tl ${i<ni?'done':i===ni?'now':''}"><b>${b[1]}${i<=ni?' ✓':''}</b><div class="d">${b[2]}</div></div>`).join('');
+}
+
+/* ================= 設定 ================= */
+function loadSettings(){
+  const s=S(), v=(id,x)=>$(id).value=x??'';
+  v('setChampix',s.champixStart); v('setQuit',s.quitDate); v('setAM',s.doseAM); v('setPM',s.dosePM); v('setCpd',s.cpd); v('setPrice',s.price); v('setJournal',s.journalTime);
+  const start=today().replace(/-/g,'');
+  const link=(title,time,details)=>{ const [h,m]=time.split(':').map(Number); const em=m+10;
+    const st=pad(h)+pad(m)+'00', en=pad((h+Math.floor(em/60))%24)+pad(em%60)+'00';
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+start+'T'+st+'/'+start+'T'+en+'&ctz=Asia%2FTaipei&recur='+encodeURIComponent('RRULE:FREQ=DAILY;COUNT=90')+'&details='+encodeURIComponent(details); };
+  $('calLinks').innerHTML=[
+    ['吃 Champix（早上）',s.doseAM,'飯後配一大杯水吃，吃完到「寶貝的戒菸紀錄」按「吃了」。'],
+    ['吃 Champix（晚上）',s.dosePM,'晚餐後吃，不要拖到睡前，比較不會影響睡眠。'],
+    ['寫戒菸日記',s.journalTime,'記錄今天心情、想抽菸的次數，還有昨晚睡得如何。']
+  ].map(([t,tm,d])=>`<a class="alert good" href="${esc(link(t,tm,d))}" target="_blank" rel="noopener"><b>加到 Google 日曆：${t}</b><br><span class="sub">每天 ${tm}</span></a>`).join('');
+}
+$('btnSaveSettings').onclick=()=>{
+  const g=id=>$(id).value;
+  const s={...S(),champixStart:g('setChampix'),quitDate:g('setQuit'),doseAM:g('setAM')||'08:00',dosePM:g('setPM')||'18:30',cpd:+g('setCpd')||0,price:+g('setPrice')||0,journalTime:g('setJournal')||'21:30'};
+  ST.settings=s; loadSettings(); render(); send('saveSettings',{settings:s},'設定已儲存');
+};
+$('btnMakeLink').onclick=()=>{
+  const code=$('shareCode').value.trim(); if(!code) return;
+  const url=location.origin+location.pathname+'#'+new URLSearchParams({api:CONN.api,code}).toString();
+  $('shareOut').innerHTML=`<div class="alert good"><code></code><div class="row" style="margin-top:8px"><button class="small primary" id="btnCopy">複製連結</button></div></div>`;
+  $('shareOut').querySelector('code').textContent=url;
+  $('btnCopy').onclick=()=>navigator.clipboard.writeText(url).then(()=>toast('已複製，貼到 LINE 傳給他')).catch(()=>toast('請長按上面的連結複製'));
+};
+$('btnLogout').onclick=()=>{ store.del(CONN_KEY); store.del(CACHE_KEY); location.hash=''; location.reload(); };
+
+/* ================= 頁內提醒 ================= */
+const fired={};
+function tick(){
+  if(ST.role!=='him') return;
+  const t=hm(new Date()), d=dayOf(today()), dose=champixDose(champixDay()), k=today();
+  const fire=(id,cond,msg)=>{ if(cond&&!fired[k+id]){ fired[k+id]=1; toast(msg); } };
+  if(dose){ fire('am',t>=S().doseAM&&!d.dose_am,`該吃早上的 Champix 了（${dose.am}）`); if(dose.pm) fire('pm',t>=S().dosePM&&!d.dose_pm,`該吃晚上的 Champix 了（${dose.pm}），晚餐後吃`); }
+}
+
+/* ================= 渲染 ================= */
+function render(){
+  $('todayLabel').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  if(ST.tab==='home') renderHome();
+  if(ST.tab==='cheer') renderCheer();
+  if(ST.tab==='trend') renderTrend();
+  if(ST.tab==='learn') renderBenefits();
+}
+
+/* ================= 啟動 ================= */
+function startApp(){
+  buildNav(); go(ST.role==='her'?'cheer':'home');
+  setInterval(()=>{ refresh(); tick(); },60000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refresh(); });
+  setTimeout(tick,2000);
+}
+async function connect(api,code){
+  $('cMsg').textContent='連線中…'; $('btnConnect').disabled=true;
+  try{
+    const conn={api:api.trim(),code:code.trim()};
+    const j=await call('load',{},conn);
+    CONN=conn; store.set(CONN_KEY,conn); applyData(j); lastSync=new Date(); setStatus();
+    history.replaceState(null,'',location.pathname);
+    startApp();
+  }catch(e){
+    $('cMsg').textContent='連線失敗：'+(e.message==='Failed to fetch'?'網址不正確或網路問題':e.message);
+  }
+  $('btnConnect').disabled=false;
+}
+$('btnConnect').onclick=()=>connect($('cApi').value,$('cCode').value);
+
+(function boot(){
+  render();
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get('api')&&h.get('code')){ go('connect'); $('cApi').value=h.get('api'); connect(h.get('api'),h.get('code')); return; }
+  if(!CONN){ go('connect'); return; }
+  const cache=store.get(CACHE_KEY);
+  if(cache&&cache.role){ applyData(cache); setStatus('載入中…'); startApp(); refresh(); }
+  else { go('connect'); $('cApi').value=CONN.api; connect(CONN.api,CONN.code); }
+})();
+</script>
+</body>
+</html>
